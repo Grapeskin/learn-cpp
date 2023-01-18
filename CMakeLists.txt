@@ -34,3 +34,29 @@ target_link_libraries(${MQTT_MAIN}
     paho-mqtt3c
     paho-mqttpp3
 )
+
+set(ZMQ_SERVER zmq_server)
+add_executable(${ZMQ_SERVER} ${PROJECT_SOURCE_DIR}/src/zmq_server.cpp)
+
+target_include_directories(${ZMQ_SERVER} PUBLIC
+    third_part/libzmq/include
+)
+target_link_directories(${ZMQ_SERVER} PUBLIC
+    third_part/libzmq/lib
+)
+target_link_libraries(${ZMQ_SERVER}
+    zmq
+)
+
+set(ZMQ_CLIENT zmq_client)
+add_executable(${ZMQ_CLIENT} ${PROJECT_SOURCE_DIR}/src/zmq_client.cpp)
+
+target_include_directories(${ZMQ_CLIENT} PUBLIC
+    third_part/libzmq/include
+)
+target_link_directories(${ZMQ_CLIENT} PUBLIC
+    third_part/libzmq/lib
+)
+target_link_libraries(${ZMQ_CLIENT}
+    zmq
+)
