@@ -3,60 +3,21 @@ project(cpp_example)
 
 file(GLOB_RECURSE SRC_LIST ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
+
+set(CMAKE_BUILD_TYPE Debug)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/install)
+
 add_executable(${PROJECT_NAME} ${SRC_LIST})
-target_include_directories(${PROJECT_NAME} PUBLIC
-    third_part/spdlog/include
-    third_part/jsoncpp/include
-)
-target_link_directories(${PROJECT_NAME} PUBLIC
-    third_part/spdlog/lib
-    third_part/jsoncpp/lib
-)
+add_subdirectory(third_part)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    jsoncpp
-    spdlog
-)
+target_include_directories(${PROJECT_NAME} PUBLIC third_part/spdlog/include
+                                                  third_part/jsoncpp/include)
+target_link_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
-set(MQTT_MAIN mqtt_main)
-add_executable(${MQTT_MAIN} ${PROJECT_SOURCE_DIR}/src/mqtt_main.cpp)
-
-target_include_directories(${MQTT_MAIN} PUBLIC
-    third_part/paho.mqtt.c/include
-    third_part/paho.mqtt.cpp/include
-)
-target_link_directories(${MQTT_MAIN} PUBLIC
-    third_part/paho.mqtt.c/lib
-    third_part/paho.mqtt.cpp/lib
-)
-target_link_libraries(${MQTT_MAIN}
-    paho-mqtt3a
-    paho-mqtt3c
-    paho-mqttpp3
-)
-
-set(ZMQ_SERVER zmq_server)
-add_executable(${ZMQ_SERVER} ${PROJECT_SOURCE_DIR}/src/zmq_server.cpp)
-
-target_include_directories(${ZMQ_SERVER} PUBLIC
-    third_part/libzmq/include
-)
-target_link_directories(${ZMQ_SERVER} PUBLIC
-    third_part/libzmq/lib
-)
-target_link_libraries(${ZMQ_SERVER}
-    zmq
-)
-
-set(ZMQ_CLIENT zmq_client)
-add_executable(${ZMQ_CLIENT} ${PROJECT_SOURCE_DIR}/src/zmq_client.cpp)
-
-target_include_directories(${ZMQ_CLIENT} PUBLIC
-    third_part/libzmq/include
-)
-target_link_directories(${ZMQ_CLIENT} PUBLIC
-    third_part/libzmq/lib
-)
-target_link_libraries(${ZMQ_CLIENT}
-    zmq
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog jsoncpp)
