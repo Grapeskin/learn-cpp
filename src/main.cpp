@@ -5,6 +5,8 @@
 #include "json/json.h"
 #include "spdlog/fmt/fmt.h"
 #include "spdlog/spdlog.h"
+#include "zlib.h"
+#include "zmq.h"
 
 int main() {
     Json::Value json(Json::objectValue);

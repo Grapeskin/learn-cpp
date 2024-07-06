@@ -19,3 +19,11 @@ set(SPDLOG_FMT_EXTERNAL OFF)
 set(SPDLOG_FMT_EXTERNAL_HO OFF)
 set(SPDLOG_NO_EXCEPTIONS OFF)
 add_subdirectory(spdlog)
+
+set(ZLIB_BUILD_EXAMPLES OFF)
+add_subdirectory(zlib)
+
+set(BUILD_TESTS OFF)
+set(WITH_PERF_TOOL OFF)
+set(ZMQ_BUILD_TESTS OFF)
+add_subdirectory(libzmq)
