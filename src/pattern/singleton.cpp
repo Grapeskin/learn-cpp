@@ -1,15 +1,15 @@
 #include <iostream>
 
-class singleton {
+class Singleton {
    private:
-    singleton() {};
-    singleton(const singleton&) = delete;
-    singleton& operator=(const singleton&) = delete;
+    Singleton() {};
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
 
    public:
-    ~singleton() {};
-    static singleton& get_instance() {
-        static singleton instance;
+    ~Singleton() {};
+    static Singleton& get_instance() {
+        static Singleton instance;
         return instance;
     }
 
@@ -17,7 +17,9 @@ class singleton {
 };
 
 int main(int argc, char const* argv[]) {
-    printf("%x\n", singleton::get_instance());
-    printf("%x\n", singleton::get_instance());
+    Singleton& s = Singleton::get_instance();
+    printf("s=%p\n", &s);
+    Singleton& s1 = Singleton::get_instance();
+    printf("s1=%p\n", &s1);
     return 0;
 }
