@@ -1,0 +1,215 @@
+@startuml
+
+abstract class IReader{
+    {abstract} bool Load(const T& param, U& value)
+}
+
+class IJsonShmReader{
+    bool Load(const std::string& shm_name, Json::Value &value)()
+}
+class IJsonFileReader{
+    string file_path
+    bool Load(const std::string&file_path, Json::Value &value)()
+}
+
+class MapValue {
+    CustomMapData custom_map_data
+    uint64_t last_update_time
+}
+MapValue *--> CustomMapData
+
+class IMapShmReader {
+    bool Load(const std::string& param, MapValue &value)()
+}
+IMapShmReader ..> MapValue
+class MapFileReaderParam{
+    std::string data_path
+    std::string desc_path
+}
+class IMapFileReader {
+    bool Load(const MapFileReaderParam& param, MapValue&value)()
+}
+IMapFileReader ..> MapFileReaderParam
+IMapFileReader ..> MapValue
+
+class PathShmParam{
+    int start_count
+}
+class IPathShmReader {
+    bool Load(const PathShmParam& param, std::vector<IntPoint> &points)()
+}
+IPathShmReader --> PathShmParam
+IPathShmReader --> IntPoint
+
+class PathFileParam{
+    std::string map_desc_path
+    std::string path_file
+}
+class IPathFileReader {
+    bool Load(const PathFileParam& param, std::vector<IntPoint> &points)()
+}
+IPathFileReader --> PathFileParam
+IPathFileReader --> IntPoint
+
+abstract class IAreaReader{
+
+}
+abstract class IPathReader{
+
+}
+abstract class IMapReader{
+
+}
+
+IReader <|--IAreaReader
+IReader <|--IMapReader
+IReader <|--IPathReader
+
+IAreaReader <|-- IJsonShmReader
+IAreaReader <|-- IJsonFileReader
+IMapReader <|-- IMapShmReader
+IMapReader <|-- IMapFileReader
+IPathReader <|-- IPathShmReader
+IPathReader <|-- IPathFileReader
+
+abstract class IWriter{
+    {abstract} void Store()
+}
+
+abstract class IAreaWriter{
+
+}
+
+class IJsonShmWriter{
+    string shm_name
+    void Store(const Json::Value &value)()
+}
+class IJsonFileWriter{
+    string file_path
+    void Store()
+}
+
+IWriter <|--IAreaWriter
+
+IAreaWriter <|-- IJsonShmWriter
+IAreaWriter <|-- IJsonFileWriter
+
+class AutoAreaInfo{}
+class ForbidArea{}
+class AreaInfo{}
+class SingleActiveArea{}
+
+class Area {
+    IAreaReader reader
+    IAreaWriter writer
+
+    AutoAreaInfo auto_area_info
+    ForbidArea forbid_area
+    AreaInfo area_info
+    SingleActiveArea single_active_area
+
+    void Load()
+    void Store()
+}
+
+Area o--> IAreaReader
+Area o--> IAreaWriter
+
+Area *--> AutoAreaInfo
+Area *--> ForbidArea
+Area *--> AreaInfo
+Area *--> SingleActiveArea
+
+class CustomMapData {
+    uint64_t mapId
+    float w
+    float h
+    float x_min
+    float y_min
+    float resolution
+    MapData data
+    float charger_x
+    float charger_y
+    float charger_phi
+}
+
+class Map {
+    IMapReader reader
+    Area area
+    CustomMapData map_data
+    void Load()
+}
+
+Map *--> IMapReader
+Map --> CustomMapData
+Map o--> Area
+
+class MapItem{
+    std::string bkmap_path
+    uint64_t cloud_map_id
+    uint64_t local_map_id
+}
+
+class MultiMap {
+    void Save()
+    void Delete()
+    void Update()
+    std::vector<MapItem> Query()
+}
+MultiMap --> MapItem
+
+class Path {
+    IPathReader reader
+    void Load()
+}
+Path *--> IPathReader
+
+class CleanData {
+    int start
+    int end
+    int sweep
+    int mop
+    int sweepOnly
+    int cleanTime
+    int cleanMode
+    int isDoneNormal
+    ...
+}
+class CleanRecord {
+    Map map
+    Path path
+    CleanData clean_data
+    void Load()
+}
+CleanRecord *--> Map
+CleanRecord *--> Path
+CleanRecord *--> CleanData
+CleanRecord --> IReader
+
+class Property {
+
+}
+class CommandService {
+
+}
+
+
+class Application{
+    Map map
+    Path path
+    MultiMap multi_map
+    CleanRecord clean_record
+    CommandService command_service
+    Property property
+}
+Application *--> Map
+Application *--> Path
+Application *--> MultiMap
+Application *--> CleanRecord
+Application *--> Property
+Application *--> CommandService
+Application --> IReader
+Application --> IWriter
+
+
+@enduml

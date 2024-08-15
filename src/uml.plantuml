@@ -1,0 +1,136 @@
+@startuml
+
+abstract class ISubscriber {
+    String topic
+    const std::string &GetTopic()
+    {abstract} void Call(std::shared_ptr<IMessage> msg)()
+    {abstract} std::shared_ptr<IMessage> CreateMsg()
+}
+
+abstract class IServiceServer {
+    String service_
+    const std::string &GetService()
+    {abstract} int32_t Call(const void *in_data, uint32_t in_length, std::shared_ptr<void> &out_data, uint32_t &out_length)()
+    {abstract} int32_t Call(const IMessage *request, IMessage *response)
+}
+
+class SerializerValue {
+    void *object_
+
+}
+class Serializer {
+    void *object_
+    SerializerValue Create()
+    void Serialize(std::shared_ptr<void> &buf, uint32_t &size)()
+    SerializerValue Parse(const void *buf, uint32_t size)()
+}
+Serializer ..> SerializerValue
+
+abstract class IMessage {
+    void Serialize(std::shared_ptr<void> &buf, uint32_t &size)
+    void Unserialize(const void *buf, uint32_t size)()
+    {abstract} void SerializeValue(SerializerValue &result)()
+    {abstract} void UnserializeValue(const SerializerValue &value)()
+}
+
+IMessage ..> Serializer
+IMessage ..> SerializerValue
+
+
+class Subscriber {
+    {field} std::function<void()> cb
+    void Call(std::shared_ptr<IMessage> msg)()
+    std::shared_ptr<IMessage> CreateMsg()
+}
+ISubscriber <|-- Subscriber
+Subscriber ..> IMessage
+
+class ServiceServer {
+    {field} std::function<int32_t()> cb
+    int32_t Call(const IMessage *request, IMessage *response)()
+    int32_t Call(const void *in_data, uint32_t in_length, std::shared_ptr<void> &out_data, uint32_t &out_length)()
+}
+
+IServiceServer <|-- ServiceServer
+ServiceServer ..> IMessage
+
+class DevStatusMsg {
+    int8_t volume
+    int8_t clean_type
+    ...
+    std::shared_ptr<DevStatusMsg> Create()
+    void SerializeValue(SerializerValue& result)()
+    void UnserializeValue(const SerializerValue& value)()
+}
+DevStatusMsg ..> SerializerValue
+IMessage <|-- DevStatusMsg
+
+class Request {
+    int32_t val
+    void SerializeValue(SerializerValue& result)()
+    void UnserializeValue(const SerializerValue& value)()
+}
+
+Request ..> SerializerValue
+class Response {
+    int32_t val
+    void SerializeValue(SerializerValue& result)()
+    void UnserializeValue(const SerializerValue& value)()
+}
+Response ..> SerializerValue
+
+IMessage <|-- Request
+IMessage <|-- Response
+
+class StdIntSrv {
+    Request request
+    Response response
+}
+StdIntSrv *--> Request
+StdIntSrv *--> Response
+
+
+class PublishMsgPacket {
+    std::string topic_
+    std::shared_ptr<IMessage> msg_
+}
+
+PublishMsgPacket --> IMessage
+
+class AposLocal {
+    std::map<std::string, std::vector<std::shared_ptr<ISubscriber>>> subscriber_map_
+    std::map<std::string, std::shared_ptr<IServiceServer>> service_map_
+    bool is_running_
+    std::unique_ptr<MsgQueue<std::shared_ptr<PublishMsgPacket>>> publish_msg_queue_
+    {field} std::function<void(const std::string &, const void *, uint32_t)> publish_bridge_cb_
+    {static} AposLocal *Instance()
+    void Init(uint32_t thread_num)()
+    int32_t Publish(const std::string &topic, const std::shared_ptr<IMessage> &msg)()
+    int32_t Subscribe(const std::string &topic, const std::shared_ptr<ISubscriber> &subscriber)()
+    int32_t RegisterPublishBridge(std::function<void(const std::string &, const void *, uint32_t)> cb)()
+    void RegisterServer(const std::string &service, std::shared_ptr<IServiceServer> &service_server)()
+    int32_t CallServer(const std::string &service_name, const void *request_data, uint32_t request_len,std::shared_ptr<void> &response_data, uint32_t &response_len)()
+    int32_t CallServer(const std::string &service_name, const IMessage *request,IMessage *response)()
+
+    -void PublishMsgProc()
+    -void ConsumProc(std::shared_ptr<PublishMsgPacket> &packet)()
+}
+
+AposLocal o--> ISubscriber
+AposLocal o--> IServiceServer
+AposLocal o--> PublishMsgPacket
+AposLocal ..> IMessage
+
+
+class AposClient {}
+class AposServer {}
+
+AposClient --> AposLocal
+AposClient ..> StdIntSrv
+AposClient ..> DevStatusMsg
+
+AposServer --> AposLocal
+AposServer ..> StdIntSrv
+AposServer ..> DevStatusMsg
+
+@enduml
